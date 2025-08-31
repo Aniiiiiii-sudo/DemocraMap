@@ -1,0 +1,601 @@
+﻿@page "/"
+@rendermode InteractiveWebAssembly
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using Markdig
+
+<PageTitle>DemocraMap</PageTitle>
+
+
+
+<div class="card mb-4">
+    <div class="card-body">
+        @if (showIndigenous || showMigrants || showOutreach)
+        {
+            <div class="map-header mb-3">
+                <h4 style="color:#301934">
+                    @GetMapHeader()
+                </h4>
+                <p class="text-muted" >
+                    @GetMapDescription()
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="map-header mb-3">
+                <h4 style="color:#301934">
+                    Map of Australia
+                </h4>
+            </div>
+        }
+
+        <div id="map" style="height:600px; width:100%; border:1px solid #ccc;"></div>
+
+        <hr />
+
+        <!-- Toggles -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 class="card-title" style="color:#301934;">Configure DemocraMap</h3>
+                <p class="text-muted">
+                    Use the options below to customise the map view:
+                    <br />
+                    • Click <strong>Indigenous</strong> to focus on enrolment gaps among Indigenous communities. <br />
+                    • Click <strong>New Citizens</strong> to focus on participation challenges in migrant communities. <br />
+                    • Click <strong>NEEC Outreach</strong> to highlight areas prioritised for National Electoral Education Centre outreach.
+                </p>
+
+                <div class="d-flex mb-3">
+                    <div class="form-check form-check-inline mx-3">
+                        <input class="form-check-input" type="checkbox" id="chkIndigenous"
+                               @bind="showIndigenous" @bind:after="UpdateMapAndTables" />
+                        <label class="form-check-label" for="chkIndigenous">Indigenous</label>
+                    </div>
+
+                    <div class="form-check form-check-inline mx-3">
+                        <input class="form-check-input" type="checkbox" id="chkMigrants"
+                               @bind="showMigrants" @bind:after="UpdateMapAndTables" />
+                        <label class="form-check-label" for="chkMigrants">New Citizens</label>
+                    </div>
+
+                    <div class="form-check form-check-inline mx-3">
+                        <input class="form-check-input" type="checkbox" id="chkOutreach"
+                               @bind="showOutreach" @bind:after="UpdateMapAndTables" />
+                        <label class="form-check-label" for="chkOutreach">NEEC Outreach</label>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="gap-header mb-3">
+            <h3 style="color:#301934">
+                @GetGapHeader()
+            </h3>
+            <p class="text-muted">
+                @GetGapDescription()
+            </p>
+        </div>
+        <hr />
+        @if (indigenousGaps == null || migrantGaps == null || outreach == null)
+        {
+            <p><em>Loading data...</em></p>
+        }
+        else
+        {
+            if (showOutreach && showIndigenous && showMigrants)
+            {
+                <h4>Indigenous Enrolment (National Electoral Education Centre Outreach focus)</h4>
+                @RenderGapTable(indigenousGaps, outreach.Select(o => o.RegionInGap).ToList())
+                <hr />
+                <h4>New Citizen Participation (National Electoral Education Centre Outreach focus)</h4>
+                @RenderMigrantGapTable(migrantGaps, outreach.Select(o => o.RegionInGap).ToList())
+            }
+            else if (showOutreach && showMigrants && !showIndigenous)
+            {
+                <h4>New Citizen Participation</h4>
+                @RenderMigrantGapTable(migrantGaps, outreach.Select(o => o.RegionInGap).ToList())
+            }
+            else if (showOutreach && showIndigenous && !showMigrants)
+            {
+                <h4>Indigenous Enrolment</h4>
+                @RenderGapTable(indigenousGaps, outreach.Select(o => o.RegionInGap).ToList())
+            }
+            else if (showOutreach && !showIndigenous && !showMigrants)
+            {
+                <h4>Indigenous Enrolment (National Electoral Education Centre Outreach Only)</h4>
+                @RenderGapTable(indigenousGaps.Where(g => outreach.Any(o => o.RegionInGap == g.Region)))
+                <hr />
+                <h4>New Citizen Participation (National Electoral Education Centre Outreach Only)</h4>
+                @RenderMigrantGapTable(migrantGaps.Where(m => outreach.Any(o => o.RegionInGap == m.Region)))
+            }
+            else if (!showOutreach && showIndigenous && showMigrants)
+            {
+                <h4>Indigenous Enrolment</h4>
+                @RenderGapTable(indigenousGaps)
+
+                <h4>New Citizen Participation</h4>
+                @RenderMigrantGapTable(migrantGaps)
+            }
+            else if (!showOutreach && showIndigenous && !showMigrants)
+            {
+                <h4>Indigenous Enrolment</h4>
+                @RenderGapTable(indigenousGaps)
+            }
+            else if (!showOutreach && showMigrants && !showIndigenous)
+            {
+                <h4>New Citizen Participation</h4>
+                @RenderMigrantGapTable(migrantGaps)
+            }
+            else
+            {
+                <p><em>No data selected.</em></p>
+            }
+        }
+    </div>
+</div>
+
+<!-- Generate Brief Section -->
+<div class="card mt-4">
+    <div class="card-body">
+        <h3>Breif Strategy</h3>
+        <p class="text-muted">
+            @GetBriefDescription()
+            @GetBriefusing()
+            <span title="This content is AI-generated and may contain inaccuracies.">.</span>
+        </p>
+
+        <!-- Focus configuration -->
+        <div class="d-flex flex-wrap mt-3">
+            <div class="form-check form-check-inline mx-3">
+                <input class="form-check-input" type="checkbox" id="focusOutreach" @bind="focusOutreach" />
+                <label class="form-check-label" for="focusOutreach">Outreach Plan</label>
+            </div>
+
+            <div class="form-check form-check-inline mx-3">
+                <input class="form-check-input" type="checkbox" id="focusBudget" @bind="focusBudget" />
+                <label class="form-check-label" for="focusBudget">Budget</label>
+            </div>
+
+            <div class="form-check form-check-inline mx-3">
+                <input class="form-check-input" type="checkbox" id="focusDemographics" @bind="focusDemographics" />
+                <label class="form-check-label" for="focusDemographics">Demographics</label>
+            </div>
+
+            <div class="form-check form-check-inline d-flex align-items-center mx-3">
+                <input class="form-check-input" type="checkbox" id="focusCustom" @bind="focusCustom" />
+                <label class="form-check-label ms-1" for="focusCustom">Custom Focus</label>
+                @if (focusCustom)
+                {
+                    <input type="text" class="form-control ms-2" style="max-width:200px;"
+                           placeholder="Enter custom focus" @bind="customFocusText" />
+                }
+            </div>
+        </div>
+
+        <!-- Trigger -->
+        <button class="btn btn-primary mt-3" @onclick="GenerateBrief" disabled="@isGenerating">
+            @(isGenerating ? "Generating..." : "Generate Brief")
+        </button>
+
+        <!-- Output -->
+        @if (!string.IsNullOrEmpty(aiBrief))
+        {
+            <div class="ai-brief-box">
+                @((MarkupString)Markdig.Markdown.ToHtml(aiBrief))
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private bool _mapInitialized;
+    private bool showIndigenous = true;
+    private bool showMigrants = true;
+    private bool showOutreach = true;
+
+    private List<IndigenousRegion> indigenous = new();
+    private List<MigrantRegion> migrants = new();
+    private List<OutreachLocation> outreach = new();
+    private List<EnrolmentGap>? indigenousGaps;
+    private List<MigrantParticipationGap>? migrantGaps;
+
+    private bool focusOutreach = true;
+    private bool focusBudget = false;
+    private bool focusDemographics = false;
+    private bool focusCustom = false;
+    private string? customFocusText;
+
+    private string? aiBrief;
+    private bool isGenerating = false;
+
+    private string GetMapHeader()
+    {
+        if (showIndigenous && showMigrants && showOutreach)
+            return "Priority Regions for Electoral Engagement";
+        if (showIndigenous && showMigrants)
+            return "Enrolment and Participation Gaps";
+        if (showIndigenous && showOutreach)
+            return "Indigenous Enrolment and Outreach Focus";
+        if (showMigrants && showOutreach)
+            return "New Citizen Participation and Outreach Focus";
+        if (showIndigenous)
+            return "Indigenous Enrolment Gaps";
+        if (showMigrants)
+            return "New Citizen Participation Gaps";
+        if (showOutreach)
+            return "Proposed NEEC Outreach Locations";
+
+        return "Hotspots"; // fallback
+    }
+
+    private string GetMapDescription()
+    {
+        if (showIndigenous && showMigrants && showOutreach)
+            return "All regions are shown with blue markers. Where National Electoral Education Centre Outreach priorities overlap, Indigenous regions are highlighted with red circles and New Citizen regions with orange circles.";
+        if (showIndigenous && showMigrants)
+            return "All Indigenous and New Citizen regions are shown with blue markers, without National Electoral Education Centre overlays.";
+        if (showIndigenous && showOutreach)
+            return "Indigenous regions are shown with blue markers, and National Electoral Education Centre Outreach priorities highlight overlapping areas with red circles.";
+        if (showMigrants && showOutreach)
+            return "New Citizen regions are shown with blue markers, and National Electoral Education Centre Outreach priorities highlight overlapping areas with orange circles.";
+        if (showIndigenous)
+            return "Indigenous regions are shown with blue markers.";
+        if (showMigrants)
+            return "New Citizen regions are shown with blue markers.";
+        if (showOutreach)
+            return "National Electoral Education Centre Outreach priorities are shown as colored circles overlaying blue markers: red for Indigenous overlaps, orange for New Citizen overlaps.";
+
+        return "";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_mapInitialized)
+        {
+            _mapInitialized = true;
+            await JS.InvokeVoidAsync("initMap");
+
+            // Load all datasets
+            indigenous = await Http.GetFromJsonAsync<List<IndigenousRegion>>("/api/indigenous") ?? new();
+            migrants = await Http.GetFromJsonAsync<List<MigrantRegion>>("/api/migrants") ?? new();
+            outreach = await Http.GetFromJsonAsync<List<OutreachLocation>>("/api/outreach") ?? new();
+            indigenousGaps = await Http.GetFromJsonAsync<List<EnrolmentGap>>("/api/gaps");
+            migrantGaps = await Http.GetFromJsonAsync<List<MigrantParticipationGap>>("/api/migrant-gaps");
+
+            await UpdateMapAndTables();
+        }
+    }
+
+    private async Task UpdateMapAndTables()
+    {
+        await UpdateMap();
+        StateHasChanged();
+    }
+
+    private async Task UpdateMap()
+    {
+        Console.WriteLine($"UpdateMap called: Indigenous={showIndigenous}, Migrants={showMigrants}, Outreach={showOutreach}");
+        await JS.InvokeVoidAsync("updateMarkers", showIndigenous, showMigrants, showOutreach, indigenous, migrants, outreach);
+    }
+
+    private string GetGapHeader()
+    {
+        if (showOutreach && showIndigenous && showMigrants)
+            return "Possible Interventions and Gap Descriptions (NEEC Focus)";
+        if (showOutreach && showIndigenous && !showMigrants)
+            return "Indigenous Enrolment Gaps (with NEEC Outreach focus)";
+        if (showOutreach && showMigrants && !showIndigenous)
+            return "New Citizen Participation Gaps (with NEEC Outreach focus)";
+        if (showOutreach && !showIndigenous && !showMigrants)
+            return "Gap Descriptions in NEEC Priority Areas";
+        if (!showOutreach && showIndigenous && showMigrants)
+            return "Interventions for Indigenous and New Citizen Communities";
+        if (!showOutreach && showIndigenous && !showMigrants)
+            return "Interventions for Indigenous Enrolment";
+        if (!showOutreach && showMigrants && !showIndigenous)
+            return "Interventions for New Citizen Participation";
+
+        return "Possible Interventions and Gap Descriptions";
+    }
+
+    private string GetGapDescription()
+    {
+        if (showOutreach && showIndigenous && showMigrants)
+            return "This section highlights interventions where enrolment gaps overlap with National Electoral Education Centre outreach priorities. Indigenous regions are emphasised in red and New Citizen regions in orange.";
+        if (showOutreach && showIndigenous && !showMigrants)
+            return "Focus on Indigenous enrolment gaps with National Electoral Education Centre outreach priorities highlighted for targeted interventions.";
+        if (showOutreach && showMigrants && !showIndigenous)
+            return "Focus on New Citizen participation gaps with National Electoral Education Centre outreach priorities highlighted for targeted interventions.";
+        if (showOutreach && !showIndigenous && !showMigrants)
+            return "Shows only regions where National Electoral Education Centre outreach is planned, with interventions tied to those areas.";
+        if (!showOutreach && showIndigenous && showMigrants)
+            return "Shows the full lists of enrolment and participation gaps, without applying National Electoral Education Centre outreach filters.";
+        if (!showOutreach && showIndigenous && !showMigrants)
+            return "Shows Indigenous enrolment gaps across regions, without applying National Electoral Education Centre outreach filters.";
+        if (!showOutreach && showMigrants && !showIndigenous)
+            return "Shows New Citizen participation gaps across regions, without applying National Electoral Education Centre outreach filters.";
+
+        return "Select one or more categories above to view gap descriptions and possible interventions.";
+    }
+
+    // --- Table render helpers ---
+    private RenderFragment RenderGapTable(IEnumerable<EnrolmentGap> rows, List<string>? highlightRegions = null) => __builder =>
+    {
+        <div class="card mt-4" style="margin-bottom: 20px;">
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Region</th>
+                            <th>Enrolment Rate</th>
+                            <th>Gap Description</th>
+                            <th>Possible Interventions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in rows)
+                        {
+                            var highlight = highlightRegions != null && highlightRegions.Contains(row.Region);
+                            <tr style="@(highlight ? "background-color:#f8d7da" : "")">
+                                @* 🔴 Red for Indigenous *@
+                                <td>@row.Region</td>
+                                <td>@row.EnrolmentRate</td>
+                                <td>@row.GapDescription</td>
+                                <td>@row.PossibleInterventions</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        ;
+    };
+
+    private RenderFragment RenderMigrantGapTable(IEnumerable<MigrantParticipationGap> rows, List<string>? highlightRegions = null) => __builder =>
+    {
+        <div class="card mt-4" style="margin-bottom: 20px;">
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Region</th>
+                            <th>Key Data Point</th>
+                            <th>Gap Description</th>
+                            <th>Possible Interventions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in rows)
+                        {
+                            var highlight = highlightRegions != null && highlightRegions.Contains(row.Region);
+                            <tr style="@(highlight ? "background-color:#ffe5b4" : "")">
+                                @* 🔵 Orange for Migrants *@
+                                <td>@row.Region</td>
+                                <td>@row.KeyDataPoint</td>
+                                <td>@row.GapDescription</td>
+                                <td>@row.PossibleInterventions</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        ;
+    };
+
+    private string GetBriefusing()
+    {
+        var parts = new List<string>();
+        if (showIndigenous) parts.Add("Indigenous Enrolment");
+        if (showMigrants) parts.Add("New Citizen Participation");
+        if (showOutreach) parts.Add("NEEC Outreach");
+
+        var focus = new List<string>();
+        if (focusOutreach) focus.Add("Outreach");
+        if (focusBudget) focus.Add("Budget");
+        if (focusDemographics) focus.Add("Demographics");
+        if (focusCustom && !string.IsNullOrWhiteSpace(customFocusText)) focus.Add(customFocusText);
+
+        var focusText = focus.Count > 0 ? $" ({string.Join(", ", focus)} focus)" : "";
+        return $"It generates Brief for {string.Join(" , ", parts)}{focusText} based on the selected feilds below";
+    }
+
+    private string GetBriefDescription()
+    {
+        if (showIndigenous && showMigrants && showOutreach)
+            return "This brief will combine Indigenous enrolment gaps, New Citizen participation challenges, and NEEC Outreach priorities into a single summary.";
+        if (showIndigenous && showMigrants)
+            return "This brief will summarise both Indigenous enrolment and New Citizen participation gaps.";
+        if (showIndigenous && showOutreach)
+            return "This brief will focus on Indigenous enrolment gaps in NEEC Outreach priority areas.";
+        if (showMigrants && showOutreach)
+            return "This brief will focus on New Citizen participation gaps in NEEC Outreach priority areas.";
+        if (showIndigenous)
+            return "This brief will address Indigenous enrolment gaps across regions.";
+        if (showMigrants)
+            return "This brief will address New Citizen participation gaps across regions.";
+        if (showOutreach)
+            return "This brief will summarise only the NEEC Outreach priority regions.";
+
+        return "Select one or more categories above to generate an AI-powered summary.";
+    }
+
+    private string GetAiContext(object selected)
+    {
+        var sb = new System.Text.StringBuilder();
+
+        // Base context
+        sb.AppendLine("Using the following context:");
+        sb.AppendLine($"Map: {GetMapHeader()} - {GetMapDescription()}");
+        sb.AppendLine($"Gaps: {GetGapHeader()} - {GetGapDescription()}");
+        sb.AppendLine("Dataset (summarised for analysis):");
+        sb.AppendLine(System.Text.Json.JsonSerializer.Serialize(selected));
+        sb.AppendLine();
+
+        // Shared formatting rules
+        sb.AppendLine("### Instructions for Output");
+        sb.AppendLine("- Format the output in **Markdown syntax** with clear headings, bullet points, and emphasis.");
+        sb.AppendLine("- **Do not repeat or regurgitate the raw dataset.**");
+        sb.AppendLine("- Instead, **reference the dataset contextually in bold** (e.g., **Lingiari (NT, 87%)**) when making recommendations.");
+
+        // Focus-specific instructions
+        if (focusOutreach)
+        {
+            sb.AppendLine();
+            sb.AppendLine("### Outreach Plan Focus");
+            sb.AppendLine("- Identify which regions most urgently need outreach (e.g., low enrolment/turnout).");
+            sb.AppendLine("- Recommend **community engagement strategies** (local leaders, schools, events).");
+            sb.AppendLine("- Provide a timeline of short-term and long-term outreach actions.");
+        }
+
+        if (focusBudget)
+        {
+            sb.AppendLine();
+            sb.AppendLine("### Budget Focus");
+            sb.AppendLine("- Estimate potential costs of interventions (staff, travel, materials).");
+            sb.AppendLine("- Highlight areas where funds should be prioritised.");
+            sb.AppendLine("- Suggest cost-effective strategies and potential funding partners.");
+        }
+
+        if (focusDemographics)
+        {
+            sb.AppendLine();
+            sb.AppendLine("### Demographics Focus");
+            sb.AppendLine("- Analyse key population groups (e.g., Indigenous youth, recently naturalised citizens).");
+            sb.AppendLine("- Suggest tailored strategies for these demographics.");
+            sb.AppendLine("- Highlight cultural or linguistic considerations for each region.");
+        }
+
+        if (focusCustom && !string.IsNullOrWhiteSpace(customFocusText))
+        {
+            sb.AppendLine();
+            sb.AppendLine($"### Custom Focus: {customFocusText}");
+            sb.AppendLine($"- Apply all analysis with a special focus on **{customFocusText}**.");
+            sb.AppendLine($"- Explain how {customFocusText} relates to electoral education and participation gaps.");
+            sb.AppendLine($"- Provide targeted actions that address {customFocusText} within the given regions.");
+        }
+
+        // Always close with structure
+        sb.AppendLine();
+        sb.AppendLine("### Deliverables");
+        sb.AppendLine("- Provide a **plan of action** with:");
+        sb.AppendLine("  1. **Concrete steps** (short-term and long-term).");
+        sb.AppendLine("  2. **Priorities** (rank regions or actions).");
+        sb.AppendLine("  3. **Recommendations for practitioners or policymakers** (e.g., outreach teams, budget allocations, partnerships).");
+        sb.AppendLine("- Where helpful, use **tables** or **checklists** to present strategies.");
+        sb.AppendLine("- Keep the brief concise but actionable (1–3 paragraphs plus bullet points).");
+        sb.AppendLine("Markdown hearers should not be centred");
+
+        return sb.ToString();
+    }
+
+    // --- Generate Brief ---
+    private async Task GenerateBrief()
+    {
+        isGenerating = true;
+        aiBrief = null;
+
+        try
+        {
+            // Selected dataset rows
+            var selected = new
+            {
+                Indigenous = showIndigenous ? indigenousGaps?.Select(g => new
+                {
+                    g.Region,
+                    g.EnrolmentRate,
+                    g.GapDescription,
+                    g.PossibleInterventions
+                }) : null,
+                Migrants = showMigrants ? migrantGaps?.Select(m => new
+                {
+                    m.Region,
+                    m.KeyDataPoint,
+                    m.GapDescription,
+                    m.PossibleInterventions
+                }) : null,
+                Outreach = showOutreach ? outreach?.Select(o => new
+                {
+                    o.Region,
+                    o.GroupType,
+                    o.EnrolmentRate,
+                    o.TargetGroupPercent
+                }) : null
+            };
+
+            // Build system role from checkboxes
+            var roles = new List<string>();
+            if (focusOutreach) roles.Add("outreach strategist");
+            if (focusBudget) roles.Add("budget analyst");
+            if (focusDemographics) roles.Add("demographic specialist");
+            if (focusCustom && !string.IsNullOrWhiteSpace(customFocusText))
+                roles.Add($"expert in {customFocusText}");
+
+            string systemRole;
+            if (roles.Count == 1 && focusCustom) // custom-only case
+            {
+                systemRole = $"You are an expert in {customFocusText}. Focus primarily on how electoral education can address this area, using the provided data as context.";
+            }
+            else
+            {
+                systemRole = $"You are a {string.Join(" and ", roles)} providing practical guidance.";
+            }
+
+            // Build user prompt with AI context
+            var userPrompt = GetAiContext(selected);
+
+            var payload = new
+            {
+                model = "gpt-4o-mini",
+                messages = new object[]
+                {
+                new { role = "system", content = systemRole },
+                new { role = "user", content = userPrompt }
+                }
+            };
+
+            var response = await Http.PostAsJsonAsync("/api/analyse", payload);
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+
+            if (doc.RootElement.TryGetProperty("choices", out var choices))
+            {
+                aiBrief = choices[0].GetProperty("message").GetProperty("content").GetString();
+            }
+            else if (doc.RootElement.TryGetProperty("error", out var error))
+            {
+                aiBrief = $"API Error: {error.GetProperty("message").GetString()}";
+            }
+            else
+            {
+                aiBrief = "[No AI response]";
+            }
+        }
+        catch (Exception ex)
+        {
+            aiBrief = $"Error generating brief: {ex.Message}";
+        }
+        finally
+        {
+            isGenerating = false;
+        }
+    }
+
+    // --- DTOs ---
+    public class IndigenousRegion { public string Region { get; set; } public double Latitude { get; set; } public double Longitude { get; set; } public string GroupType { get; set; } public string EnrolmentRate { get; set; } public int EducationAccessScore { get; set; } public string IndigenousPopulationPercent { get; set; } public string RegionInGap { get; set; } }
+    public class MigrantRegion { public string Region { get; set; } public double Latitude { get; set; } public double Longitude { get; set; } public string GroupType { get; set; } public string EnrolmentRate { get; set; } public int EducationAccessScore { get; set; } public string OverseasBornPercent { get; set; } public string RegionInGap { get; set; } }
+    public class OutreachLocation { public string Region { get; set; } public double Latitude { get; set; } public double Longitude { get; set; } public string GroupType { get; set; } public string EnrolmentRate { get; set; } public int EducationAccessScore { get; set; } public string TargetGroupPercent { get; set; } public string RegionInGap { get; set; } }
+    public class EnrolmentGap { public string Region { get; set; } public string EnrolmentRate { get; set; } public string GapDescription { get; set; } public string PossibleInterventions { get; set; } }
+    public class MigrantParticipationGap { public string Region { get; set; } public string KeyDataPoint { get; set; } public string GapDescription { get; set; } public string PossibleInterventions { get; set; } }
+}

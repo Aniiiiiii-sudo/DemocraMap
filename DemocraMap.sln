@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36212.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemocraMap", "DemocraMap\DemocraMap\DemocraMap.csproj", "{05637BB5-3B08-425D-A22C-D97019FFE547}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemocraMap.Client", "DemocraMap\DemocraMap.Client\DemocraMap.Client.csproj", "{FB42B7DA-9DFF-417E-8C43-6577547767C8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{05637BB5-3B08-425D-A22C-D97019FFE547}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05637BB5-3B08-425D-A22C-D97019FFE547}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05637BB5-3B08-425D-A22C-D97019FFE547}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05637BB5-3B08-425D-A22C-D97019FFE547}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB42B7DA-9DFF-417E-8C43-6577547767C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB42B7DA-9DFF-417E-8C43-6577547767C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB42B7DA-9DFF-417E-8C43-6577547767C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB42B7DA-9DFF-417E-8C43-6577547767C8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {326BA8AD-B7A3-4153-8A9B-FD1F3D00F089}
+	EndGlobalSection
+EndGlobal

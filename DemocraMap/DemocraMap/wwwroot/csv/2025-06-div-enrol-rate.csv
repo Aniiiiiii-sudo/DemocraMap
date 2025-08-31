@@ -1,0 +1,151 @@
+State,Division,Enrolment_Rate
+ACT,Bean,98% or over
+ACT,Canberra,85% to less than 90%
+ACT,Fenner,98% or over
+NSW,Banks,98% or over
+NSW,Barton,90% to less than 95%
+NSW,Bennelong,95% to less than 98%
+NSW,Berowra,98% or over
+NSW,Blaxland,95% to less than 98%
+NSW,Bradfield,98% or over
+NSW,Calare,98% or over
+NSW,Chifley,98% or over
+NSW,Cook,98% or over
+NSW,Cowper,98% or over
+NSW,Cunningham,98% or over
+NSW,Dobell,98% or over
+NSW,Eden-Monaro,95% to less than 98%
+NSW,Farrer,98% or over
+NSW,Fowler,98% or over
+NSW,Gilmore,98% or over
+NSW,Grayndler,95% to less than 98%
+NSW,Greenway,95% to less than 98%
+NSW,Hughes,98% or over
+NSW,Hume,98% or over
+NSW,Hunter,98% or over
+NSW,Kingsford Smith,90% to less than 95%
+NSW,Lindsay,95% to less than 98%
+NSW,Lyne,98% or over
+NSW,Macarthur,98% or over
+NSW,Mackellar,98% or over
+NSW,Macquarie,98% or over
+NSW,McMahon,98% or over
+NSW,Mitchell,98% or over
+NSW,New England,98% or over
+NSW,Newcastle,95% to less than 98%
+NSW,Page,98% or over
+NSW,Parkes,98% or over
+NSW,Parramatta,90% to less than 95%
+NSW,Paterson,98% or over
+NSW,Reid,90% to less than 95%
+NSW,Richmond,98% or over
+NSW,Riverina,98% or over
+NSW,Robertson,98% or over
+NSW,Shortland,98% or over
+NSW,Sydney,85% to less than 90%
+NSW,Warringah,98% or over
+NSW,Watson,95% to less than 98%
+NSW,Wentworth,95% to less than 98%
+NSW,Werriwa,98% or over
+NSW,Whitlam,98% or over
+NT,Lingiari,85% to less than 90%
+NT,Solomon,95% to less than 98%
+QLD,Blair,98% or over
+QLD,Bonner,98% or over
+QLD,Bowman,98% or over
+QLD,Brisbane,85% to less than 90%
+QLD,Capricornia,95% to less than 98%
+QLD,Dawson,95% to less than 98%
+QLD,Dickson,98% or over
+QLD,Fadden,95% to less than 98%
+QLD,Fairfax,98% or over
+QLD,Fisher,98% or over
+QLD,Flynn,98% or over
+QLD,Forde,95% to less than 98%
+QLD,Griffith,90% to less than 95%
+QLD,Groom,98% or over
+QLD,Herbert,98% or over
+QLD,Hinkler,98% or over
+QLD,Kennedy,95% to less than 98%
+QLD,Leichhardt,95% to less than 98%
+QLD,Lilley,98% or over
+QLD,Longman,95% to less than 98%
+QLD,Maranoa,98% or over
+QLD,McPherson,98% or over
+QLD,Moncrieff,90% to less than 95%
+QLD,Moreton,90% to less than 95%
+QLD,Oxley,95% to less than 98%
+QLD,Petrie,98% or over
+QLD,Rankin,98% or over
+QLD,Ryan,95% to less than 98%
+QLD,Wide Bay,98% or over
+QLD,Wright,98% or over
+SA,Adelaide,90% to less than 95%
+SA,Barker,95% to less than 98%
+SA,Boothby,95% to less than 98%
+SA,Grey,95% to less than 98%
+SA,Hindmarsh,98% or over
+SA,Kingston,98% or over
+SA,Makin,98% or over
+SA,Mayo,98% or over
+SA,Spence,98% or over
+SA,Sturt,95% to less than 98%
+TAS,Bass,98% or over
+TAS,Braddon,98% or over
+TAS,Clark,98% or over
+TAS,Franklin,98% or over
+TAS,Lyons,98% or over
+VIC,Aston,98% or over
+VIC,Ballarat,98% or over
+VIC,Bendigo,98% or over
+VIC,Bruce,98% or over
+VIC,Calwell,98% or over
+VIC,Casey,98% or over
+VIC,Chisholm,90% to less than 95%
+VIC,Cooper,95% to less than 98%
+VIC,Corangamite,98% or over
+VIC,Corio,98% or over
+VIC,Deakin,98% or over
+VIC,Dunkley,98% or over
+VIC,Flinders,98% or over
+VIC,Fraser,95% to less than 98%
+VIC,Gellibrand,98% or over
+VIC,Gippsland,98% or over
+VIC,Goldstein,98% or over
+VIC,Gorton,98% or over
+VIC,Hawke,98% or over
+VIC,Holt,98% or over
+VIC,Hotham,90% to less than 95%
+VIC,Indi,98% or over
+VIC,Isaacs,98% or over
+VIC,Jagajaga,98% or over
+VIC,Kooyong,95% to less than 98%
+VIC,La Trobe,98% or over
+VIC,Lalor,98% or over
+VIC,Macnamara,90% to less than 95%
+VIC,Mallee,98% or over
+VIC,Maribyrnong,95% to less than 98%
+VIC,McEwen,98% or over
+VIC,Melbourne,75% to less than 80%
+VIC,Menzies,90% to less than 95%
+VIC,Monash,98% or over
+VIC,Nicholls,98% or over
+VIC,Scullin,98% or over
+VIC,Wannon,98% or over
+VIC,Wills,95% to less than 98%
+WA,Brand,90% to less than 95%
+WA,Bullwinkel,98% or over
+WA,Burt,95% to less than 98%
+WA,Canning,98% or over
+WA,Cowan,98% or over
+WA,Curtin,90% to less than 95%
+WA,Durack,85% to less than 90%
+WA,Forrest,98% or over
+WA,Fremantle,95% to less than 98%
+WA,Hasluck,95% to less than 98%
+WA,Moore,98% or over
+WA,O'Connor,95% to less than 98%
+WA,Pearce,98% or over
+WA,Perth,85% to less than 90%
+WA,Swan,85% to less than 90%
+WA,Tangney,90% to less than 95%
